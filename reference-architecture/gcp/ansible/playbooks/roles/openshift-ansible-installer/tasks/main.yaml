@@ -19,7 +19,7 @@
     - name: assert that the openshift installer is installed
       assert:
         that:
-        - aoi_installed | succeeded
+        - aoi_installed is succeeded
         msg: Please install the atomic-openshift-utils package on the deployer machine.
 
     - name: create symlink from aoi dir to rpm location
@@ -27,7 +27,7 @@
         src: /usr/share/ansible/openshift-ansible
         dest: '{{ openshift_ansible_installer_dir }}'
         state: link
-    when: aoi_available | succeeded
+    when: aoi_available is succeeded
   when:
   - ansible_distribution == 'RedHat'
   - ansible_distribution_major_version == '7'

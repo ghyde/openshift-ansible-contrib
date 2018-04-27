@@ -57,7 +57,7 @@
       with_items:
         - "{{ openshift_deploy_repos | difference(enabled_repos.stdout_lines) }}"
       register: subscribe_repos
-      until: subscribe_repos | succeeded
+      until: subscribe_repos is succeeded
 
     - name: "Obtain updated list of currently enabled repos"
       shell: 'subscription-manager repos --list-enabled | sed -ne "s/^Repo ID:[^a-zA-Z0-9]*\(.*\)/\1/p"'

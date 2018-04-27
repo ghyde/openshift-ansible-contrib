@@ -15,7 +15,7 @@
       with_items:
         - "{{ openshift_required_repos | difference(enabled_repos.stdout_lines) }}"
       register: subscribe_repos
-      until: subscribe_repos | succeeded
+      until: subscribe_repos is succeeded
 
     - name: check to see if rhui exists
       stat:

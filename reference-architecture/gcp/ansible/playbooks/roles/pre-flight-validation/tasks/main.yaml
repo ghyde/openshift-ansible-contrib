@@ -35,7 +35,7 @@
 - name: assert that gcloud is present
   assert:
     that:
-    - gcloud_state | succeeded
+    - gcloud_state is succeeded
     msg: gcloud utility seems to be missing. For installation information, see https://cloud.google.com/sdk/downloads
 
 - block:

@@ -8,5 +8,5 @@
 - name: assert that package {{ item }} exists
   assert:
     that:
-    - package_result | succeeded
+    - package_result is succeeded
     msg: Package '{{ item }}' is required. Please install it with your package manager, e.g. 'sudo yum install {{ item }}'
