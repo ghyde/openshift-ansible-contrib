@@ -17,9 +17,9 @@
   hosts: all
   roles:
   - role: rhsm-subscription
-    when: "{{ deployment_type == 'openshift-enterprise' }}"
+    when: deployment_type == 'openshift-enterprise'
   - role: rhsm-repos
-    when: "{{ deployment_type == 'openshift-enterprise' }}"
+    when: deployment_type == 'openshift-enterprise'
   tasks:
   # Vagrant's "change host name" capability for Fedora/EL
   # maps hostname to loopback, conflicting with hostmanager.
@@ -33,7 +33,7 @@
   hosts: admin1
   tasks:
   - include: tasks/install_bootstrap_origin.yaml
-    when: "{{ deployment_type == 'origin' }}"
+    when: deployment_type == 'origin'
 
   - include: tasks/install_bootstrap_enterprise.yaml
-    when: "{{ deployment_type == 'openshift-enterprise' }}"
+    when: deployment_type == 'openshift-enterprise'
