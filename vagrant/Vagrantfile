@@ -7,6 +7,20 @@ hostname = Socket.gethostname
 localmachineip = IPSocket.getaddress(Socket.gethostname)
 puts %Q{ This machine has the IP '#{localmachineip} and host name '#{hostname}'}
 
+# The following is a work around until vagrant-registration is updated to work
+# with RHEL 7.5.
+# Ref: https://github.com/projectatomic/adb-vagrant-registration/issues/126#issuecomment-380931941
+module SubscriptionManagerMonkeyPatches
+  def self.subscription_manager_registered?(machine)
+    true if machine.communicate.sudo("/usr/sbin/subscription-manager list --consumed --pool-only | grep -E '^[a-f0-9]{32}$'")
+  rescue
+    false
+  end
+end
+VagrantPlugins::Registration::Plugin.guest_capability 'redhat', 'subscription_manager_registered?' do
+  SubscriptionManagerMonkeyPatches
+end
+
 # Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
 VAGRANTFILE_API_VERSION = '2'
 
@@ -47,7 +61,7 @@ end
 
 override_box_url = ''
 if deployment_type == 'openshift-enterprise'
-  box_name = 'rhel/7.2'
+  box_name = 'rhel/7.5'
 elsif origin_os == 'centos'
   box_name = 'centos/7'
 else
@@ -145,9 +159,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     admin1.hostmanager.aliases = %w(admin1)
 
     if deployment_type == 'openshift-enterprise'
-      config_playbook = "/usr/share/ansible/openshift-ansible/playbooks/byo/config.yml"
+      prereq_playbook = "/usr/share/ansible/openshift-ansible/playbooks/prerequisites.yml"
+      deploy_playbook = "/usr/share/ansible/openshift-ansible/playbooks/deploy_cluster.yml"
     else
-      config_playbook = "/home/vagrant/openshift-ansible/playbooks/byo/config.yml"
+      prereq_playbook = "/home/vagrant/openshift-ansible/playbooks/prerequisites.yml"
+      deploy_playbook = "/home/vagrant/openshift-ansible/playbooks/deploy_cluster.yml"
     end
 
     admin1.vm.synced_folder "..", "/home/vagrant/sync", type: sync_type
@@ -172,6 +188,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         openshift_hosted_registry_storage_nfs_directory: '/srv/nfs',
         openshift_hosted_registry_storage_volume_name: 'registry',
         openshift_hosted_registry_storage_volume_size: '2Gi',
+        openshift_disable_check: 'memory_availability,disk_availability',
         rhsm_user: "#{ENV.fetch('SUB_USERNAME', '')}",
         rhsm_password: "#{ENV.fetch('SUB_PASSWORD', '')}",
         rhsm_pool: rhsm_pool,
@@ -229,12 +246,34 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       ansible.host_vars = ansible_host_vars
     end
 
+    # The previous provisioning installs the EPEL Ansible package, which
+    # sometimes isn't compatable with OpenShift Enterprise. The following
+    # replaces the EPEL Ansible package with the Red Hat provided package.
+    if deployment_type == 'openshift-enterprise'
+      admin1.vm.provision "shell", inline: <<-SHELL
+        # Check if EPEL package is installed
+        if yum list installed ansible | grep -q '@epel'; then
+          yum swap -y --disablerepo epel -- remove ansible -- install ansible
+        fi
+      SHELL
+    end
+
     admin1.vm.provision :ansible_local do |ansible|
       ansible.verbose        = true
       ansible.install        = false
       ansible.limit          = "OSEv3:localhost"
       ansible.provisioning_path = '/home/vagrant/sync/vagrant'
-      ansible.playbook = config_playbook
+      ansible.playbook = prereq_playbook
+      ansible.groups = ansible_groups
+      ansible.host_vars = ansible_host_vars
+    end
+
+    admin1.vm.provision :ansible_local do |ansible|
+      ansible.verbose        = true
+      ansible.install        = false
+      ansible.limit          = "OSEv3:localhost"
+      ansible.provisioning_path = '/home/vagrant/sync/vagrant'
+      ansible.playbook = deploy_playbook
       ansible.groups = ansible_groups
       ansible.host_vars = ansible_host_vars
     end
