@@ -251,9 +251,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # replaces the EPEL Ansible package with the Red Hat provided package.
     if deployment_type == 'openshift-enterprise'
       admin1.vm.provision "shell", inline: <<-SHELL
+        # Disable EPEL repo
+        yum-config-manager --disable epel
+
         # Check if EPEL package is installed
         if yum list installed ansible | grep -q '@epel'; then
-          yum swap -y --disablerepo epel -- remove ansible -- install ansible
+          yum swap -y -- remove ansible -- install ansible
         fi
       SHELL
     end
