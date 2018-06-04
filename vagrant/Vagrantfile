@@ -252,8 +252,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # package.
     if deployment_type == 'openshift-enterprise'
       admin1.vm.provision "shell", inline: <<-SHELL
+        set -e
+
         # Disable EPEL repo
-        yum-config-manager --disable epel
+        yum-config-manager --disable epel > /dev/null
 
         # Replace EPEL Ansible package
         if yum list installed ansible | grep -q '@epel'; then
