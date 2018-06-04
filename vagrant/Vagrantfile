@@ -1,11 +1,11 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-require 'socket'
-
-hostname = Socket.gethostname
-localmachineip = IPSocket.getaddress(Socket.gethostname)
-puts %Q{ This machine has the IP '#{localmachineip} and host name '#{hostname}'}
+#require 'socket'
+#
+#hostname = Socket.gethostname
+#localmachineip = IPSocket.getaddress(Socket.gethostname)
+#puts %Q{ This machine has the IP '#{localmachineip} and host name '#{hostname}'}
 
 # The following is a work around until vagrant-registration is updated to work
 # with RHEL 7.5.
@@ -117,7 +117,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.provider "virtualbox" do |v, override|
     #v.customize ["setextradata", :id, "VBoxInternal2/SharedFoldersEnableSymlinksCreate//vagrant","1"]
-    v.memory = 1024
+    v.memory = 2048
     v.cpus = 1
     override.vm.box = box_name
     provider_name = 'virtualbox'
@@ -125,7 +125,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.provider "libvirt" do |libvirt, override|
     libvirt.cpus = 1
-    libvirt.memory = 1024
+    libvirt.memory = 2048
     libvirt.driver = 'kvm'
     override.vm.box = box_name
     provider_name = 'libvirt'
