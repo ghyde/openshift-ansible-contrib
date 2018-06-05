@@ -189,6 +189,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         openshift_hosted_registry_storage_volume_name: 'registry',
         openshift_hosted_registry_storage_volume_size: '2Gi',
         openshift_disable_check: 'memory_availability,disk_availability',
+        osm_use_cockpit: false,
         openshift_enable_unsupported_configurations: true,
         rhsm_user: "#{ENV.fetch('SUB_USERNAME', '')}",
         rhsm_password: "#{ENV.fetch('SUB_PASSWORD', '')}",
