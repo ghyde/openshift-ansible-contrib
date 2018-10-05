@@ -180,7 +180,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         openshift_master_htpasswd_users: "{'admin': '$apr1$nWG7vwhy$jCMCBmBrW3MEYmCFCckYk1'}",
         openshift_master_default_subdomain: 'apps.example.com',
         osm_default_node_selector: 'region=primary',
-        openshift_hosted_registry_selector: 'region=infra',
+        openshift_hosted_registry_selector: 'node-role.kubernetes.io/infra=true',
         openshift_hosted_registry_replicas: 1,
         openshift_hosted_registry_storage_kind: 'nfs',
         openshift_hosted_registry_storage_access_modes: ['ReadWriteMany'],
