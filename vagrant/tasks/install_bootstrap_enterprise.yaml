@@ -3,4 +3,5 @@
     name: '{{ item }}'
     state: present
   with_items:
+    - openshift-ansible
     - yum-utils
