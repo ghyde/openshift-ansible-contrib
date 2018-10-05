@@ -240,6 +240,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     }
 
     admin1.vm.provision :ansible_local do |ansible|
+      ansible.compatibility_mode = '2.0'
       ansible.verbose        = true
       ansible.install        = true
       ansible.limit          = 'OSEv3:localhost'
@@ -268,6 +269,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     end
 
     admin1.vm.provision :ansible_local do |ansible|
+      ansible.compatibility_mode = '2.0'
       ansible.verbose        = true
       ansible.install        = false
       ansible.limit          = "OSEv3:localhost"
