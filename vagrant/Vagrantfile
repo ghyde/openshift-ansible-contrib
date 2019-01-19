@@ -61,7 +61,7 @@ end
 
 override_box_url = ''
 if deployment_type == 'openshift-enterprise'
-  box_name = 'rhel/7.5'
+  box_name = 'rhel/7.6'
 elsif origin_os == 'centos'
   box_name = 'centos/7'
 else
@@ -141,16 +141,16 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     master1.hostmanager.aliases = %w(master1)
   end
 
-  config.vm.define "node1" do |node1|
-    node1.vm.network :private_network, ip: "#{NETWORK_BASE}.#{INTEGRATION_START_SEGMENT + 1}"
-    node1.vm.hostname = "node1.example.com"
-    node1.hostmanager.aliases = %w(node1)
+  config.vm.define "infra1" do |infra1|
+    infra1.vm.network :private_network, ip: "#{NETWORK_BASE}.#{INTEGRATION_START_SEGMENT + 1}"
+    infra1.vm.hostname = "infra1.example.com"
+    infra1.hostmanager.aliases = %w(infra1)
   end
 
-  config.vm.define "node2" do |node2|
-    node2.vm.network :private_network, ip: "#{NETWORK_BASE}.#{INTEGRATION_START_SEGMENT + 2}"
-    node2.vm.hostname = "node2.example.com"
-    node2.hostmanager.aliases = %w(node2)
+  config.vm.define "node1" do |node1|
+    node1.vm.network :private_network, ip: "#{NETWORK_BASE}.#{INTEGRATION_START_SEGMENT + 2}"
+    node1.vm.hostname = "node1.example.com"
+    node1.hostmanager.aliases = %w(node1)
   end
 
   config.vm.define "admin1" do |admin1|
@@ -170,7 +170,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     admin1.vm.synced_folder ".vagrant", "/home/vagrant/.hidden", type: sync_type
 
     ansible_groups = {
-      OSEv3: ["master1", "node1", "node2"],
+      OSEv3: ["master1", "infra1", "node1"],
       'OSEv3:children': ["masters", "nodes", "etcd", "nfs"],
       'OSEv3:vars': {
         ansible_become: true,
@@ -180,7 +180,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         openshift_master_htpasswd_users: "{'admin': '$apr1$nWG7vwhy$jCMCBmBrW3MEYmCFCckYk1'}",
         openshift_master_default_subdomain: 'apps.example.com',
         osm_default_node_selector: 'region=primary',
-        openshift_hosted_registry_selector: 'node-role.kubernetes.io/infra=true',
         openshift_hosted_registry_replicas: 1,
         openshift_hosted_registry_storage_kind: 'nfs',
         openshift_hosted_registry_storage_access_modes: ['ReadWriteMany'],
@@ -189,10 +188,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         openshift_hosted_registry_storage_volume_name: 'registry',
         openshift_hosted_registry_storage_volume_size: '2Gi',
         openshift_disable_check: 'memory_availability,disk_availability',
-        osm_use_cockpit: false,
+        osm_use_cockpit: true,
         os_firewall_use_firewalld: true,
-        openshift_enable_service_catalog: false,
+        openshift_enable_service_catalog: true,
         openshift_enable_unsupported_configurations: true,
+        oreg_auth_user: "#{ENV.fetch('SUB_USERNAME', '')}",
+        oreg_auth_password: "#{ENV.fetch('SUB_PASSWORD', '')}",
         rhsm_user: "#{ENV.fetch('SUB_USERNAME', '')}",
         rhsm_password: "#{ENV.fetch('SUB_PASSWORD', '')}",
         rhsm_pool: rhsm_pool,
@@ -200,7 +201,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       etcd: ["master1"],
       nfs: ["admin1"],
       masters: ["master1"],
-      nodes: ["master1", "node1", "node2"],
+      nodes: ["master1", "infra1", "node1"],
     }
 
     ansible_host_vars = {
@@ -215,7 +216,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         ansible_ssh_private_key_file: "/home/vagrant/.ssh/master1.key",
         openshift_node_group_name: 'node-config-master',
       },
-      node1: {
+      infra1: {
         openshift_ip: '192.168.50.21',
         openshift_node_labels: quote_labels(
           region: 'primary',
@@ -223,10 +224,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         ),
         openshift_schedulable: true,
         ansible_host: '192.168.50.21',
-        ansible_ssh_private_key_file: "/home/vagrant/.ssh/node1.key",
-        openshift_node_group_name: 'node-config-compute',
+        ansible_ssh_private_key_file: "/home/vagrant/.ssh/infra1.key",
+        openshift_node_group_name: 'node-config-infra',
       },
-      node2: {
+      node1: {
         openshift_ip: '192.168.50.22',
         openshift_node_labels: quote_labels(
           region: 'primary',
@@ -234,7 +235,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         ),
         openshift_schedulable: true,
         ansible_host: '192.168.50.22',
-        ansible_ssh_private_key_file: "/home/vagrant/.ssh/node2.key",
+        ansible_ssh_private_key_file: "/home/vagrant/.ssh/node1.key",
         openshift_node_group_name: 'node-config-compute',
       },
       admin1: {
