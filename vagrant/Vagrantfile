@@ -213,7 +213,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     ansible_host_vars = {
       master1:  {
-        openshift_ip: '192.168.50.20',
+        openshift_public_ip: '192.168.50.20',
         openshift_node_labels: quote_labels(
           region: 'infra',
           zone: 'default',
@@ -224,7 +224,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         openshift_node_group_name: 'node-config-master',
       },
       infra1: {
-        openshift_ip: '192.168.50.21',
+        openshift_public_ip: '192.168.50.21',
         openshift_node_labels: quote_labels(
           region: 'primary',
           zone: 'east',
@@ -235,7 +235,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         openshift_node_group_name: 'node-config-infra',
       },
       node1: {
-        openshift_ip: '192.168.50.22',
+        openshift_public_ip: '192.168.50.22',
         openshift_node_labels: quote_labels(
           region: 'primary',
           zone: 'west',
