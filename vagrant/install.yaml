@@ -24,10 +24,15 @@
   # Vagrant's "change host name" capability for Fedora/EL
   # maps hostname to loopback, conflicting with hostmanager.
   # We must repair /etc/hosts
-  - replace:
-      dest: /etc/hosts
-      regexp: '^(127\.0\.0\.1\s*)\S*\.example\.com (.*)'
-      replace: '\1\2'
+  - lineinfile:
+      path: /etc/hosts
+      regexp: '^127\.0\.0\.1\s*\S*.example.com'
+      state: absent
+  - name: update /etc/hosts to resolve hostname to default IP address
+    lineinfile:
+      path: /etc/hosts
+      insertafter: EOF
+      line: "{{ ansible_default_ipv4.address }} {{ ansible_fqdn }} {{ ansible_hostname }}"
 
 - name: Install dependencies
   hosts: admin1
