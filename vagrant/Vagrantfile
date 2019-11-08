@@ -214,10 +214,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     ansible_host_vars = {
       master1:  {
         openshift_public_ip: '192.168.50.20',
-        openshift_node_labels: quote_labels(
-          region: 'infra',
-          zone: 'default',
-        ),
         openshift_schedulable: true,
         ansible_host: '192.168.50.20',
         ansible_ssh_private_key_file: "/home/vagrant/.ssh/master1.key",
@@ -225,10 +221,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       },
       infra1: {
         openshift_public_ip: '192.168.50.21',
-        openshift_node_labels: quote_labels(
-          region: 'primary',
-          zone: 'east',
-        ),
         openshift_schedulable: true,
         ansible_host: '192.168.50.21',
         ansible_ssh_private_key_file: "/home/vagrant/.ssh/infra1.key",
@@ -236,10 +228,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       },
       node1: {
         openshift_public_ip: '192.168.50.22',
-        openshift_node_labels: quote_labels(
-          region: 'primary',
-          zone: 'west',
-        ),
         openshift_schedulable: true,
         ansible_host: '192.168.50.22',
         ansible_ssh_private_key_file: "/home/vagrant/.ssh/node1.key",
